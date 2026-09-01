@@ -1,89 +1,131 @@
-# TPS_INTELLIGENCE_CORE_01 — SOURCE MAP v0.01
+# TPS_INTELLIGENCE_CORE_01 — SOURCE MAP v0.03
 
-## Source authority rule
+## 1. Source authority rule
 
-Source files implement approved design. They do not authorize execution on production. Every executable source file must identify its owning requirement(s), gate, dependencies, reversibility class and validation tests.
+Source files implement engineering design; they do not authorize execution on production. Every source must identify its purpose, dependencies, D3KA/AI role, transaction/locking impact, reversibility, tests and evidence.
 
-## Source tree
+Current detailed source/object/routine authority:
+
+`docs/06-data-dictionary/SOURCE-ROUTINE-DEPENDENCY-CATALOG-v0.03.md`
+
+Naming origin/approval authority:
+
+`docs/00-governance/NAMING-AND-IDENTITY-REGISTER-v0.03.md`
+
+Runtime proof authority:
+
+`docs/15-evidence/ENGINEERING-STATE-LEDGER-v0.03.md`
+
+## 2. Current source tree responsibility
 
 ```text
 src/
-00-precheck/          read-only capability and state discovery
-01-security/          roles, grants, contexts, audit policies
-02-kernel/            entity/type/property/source foundations
-03-d3ka/              relation kernel, tensor package, slicing, coverage, invariants
-04-context/           context types, resolution, dimensions
-05-temporal/          temporal rules, history helpers, as-of projections
-06-graph/             property graph definitions and graph query views
-07-vector/            vector registry, embeddings, indexes, similarity
-08-knowledge/         assertion/provenance/confidence/evidence
-09-event/             event types, event ledger, event correlation
-10-policy/            policy/rule engine and deterministic authorization
-11-ai/                AI profile metadata, RAG, agents, tools, decision ledger
-12-media/             stations, channels, programs, schedules, assets, music/video
-13-commercial/        advertisers, campaigns, inventory, placements
-14-rights/            grants, restrictions, territories, windows
-15-audience/          segments, sessions/observations, affinity
-16-editorial/         news/report/interview/podcast metadata
-17-api/               JSON duality, API projection views, ORDS definitions
-18-observability/     health views, metrics, diagnostics
-19-admin/             controlled maintenance helpers
-20-reference/         reference dictionaries only
-21-indexes/           relational/text/spatial/vector index definitions
-22-jobs/              scheduler definitions after gate approval
-23-export-import/     logical export/import metadata and validation
-24-migrations/        versioned forward migrations
-25-rollback/          compensating/recovery scripts where possible
-26-certification/     read-only certification queries
+00-precheck/       read-only database/version/capability/privilege/audit/capacity discovery
+02-kernel/         universal entity/type/property/source identity and provenance foundations
+03-d3ka/           relation ontology, sparse tensor cell, package, projections, invariants, coverage
+04-context/        context taxonomy and instances
+05-temporal/       current-valid projection and shared half-open interval functions
+06-graph/          Oracle Property Graph and graph-neighbor projection
+07-vector/         vector type/storage and exact similarity source
+08-knowledge/      provenance-bearing assertions
+09-event/          event taxonomy and event ledger
+10-policy/         policy/rule tables and current deterministic policy package
+11-ai/             AI model/agent/tool/decision metadata, RAG/templates and bounded AI control plane
+12-media/          station/channel/program/schedule/assets, programming, continuity and hard rules
+13-commercial/     campaign, placement and commercial authorization
+14-rights/         rights grants and deterministic rights decision
+15-audience/       audience segment/observation projections
+16-editorial/      editorial item projection
+17-api/            entity/programming read models and JSON Duality source
+18-observability/  audit-event source
+19-admin/          schema migration ledger/admin source
+20-reference/      governed entity/relation/context/event/vector/fact/AI-tool/rating reference sources
+21-indexes/        vector index templates
+26-certification/  read-only object/D3KA/graph/vector/knowledge/AI/schedule-rights/release evidence queries
 ```
 
-## Test tree
+There is no current `src/01-security`, `src/22-jobs`, `src/23-export-import`, `src/24-migrations` or `src/25-rollback` implementation family in the authoritative source catalog unless actual files are later added. Security/migration/recovery responsibilities are currently represented by documentation, migration packages and existing source families. A directory name must not be documented as implemented merely because it appeared in an old plan.
+
+## 3. Current executable PL/SQL package families
+
+```text
+TPS_D3KA_PKG
+TPS_TEMPORAL_PKG
+TPS_POLICY_ENGINE_PKG
+TPS_RIGHTS_PKG
+TPS_AI_GUARD_PKG
+TPS_AI_PROGRAMMING_TOOL_PKG
+TPS_PROGRAMMING_PKG
+TPS_CONTINUITY_PKG
+TPS_PROGRAMMING_RULES_PKG
+TPS_COMMERCIAL_PKG
+```
+
+Exact routine names/call dependencies are in the detailed source catalog and `docs/03-architecture/PLSQL-CALL-GRAPH-v0.03.md`.
+
+## 4. Intentional trigger source
+
+```text
+TRG_TPS_CONT_DECISION_IMMUTABLE
+TRG_TPS_SCHEDULE_POLICY_GUARD
+```
+
+Triggers are used for evidence immutability or bypass-resistant state guards, not as the primary place to hide business workflows.
+
+## 5. Migration source authority
+
+```text
+migrations/V0001/   canonical kernel bootstrap
+migrations/V0002/   programming + AI guard + continuity
+migrations/V0003/   programming hard rules + commercial authorization
+```
+
+Each production change unit uses a precheck/apply/postcheck/rollback-or-recovery structure where available. Migration titles are engineering-provisional; numeric migration IDs are stable once referenced.
+
+## 6. Test families currently represented
 
 ```text
 tests/
-unit/                 package/function/constraint tests
-integration/          cross-domain and API integration
-D3KA/                 tensor cell, slice, projection, invariant, coverage tests
-graph/                graph creation/query/path/label tests
-vector/               distance/index/recall tests
-AI/                   grounding, tool, agent, authority-boundary tests
-security/             privilege-negative and audit tests
-performance/          workload and latency benchmarks
-recovery/             export/import and rebuild tests
-regression/           release regression suites
-fixtures/             synthetic/reference fixtures only
+AI/
+D3KA/
+compile/
+fixtures/
+graph/
+performance/
+programming/
+recovery/
+regression/
+security/
+temporal/
+unit/
+vector/
 ```
 
-## Key planned source files
+Additional commercial/continuity/AI-control tests may be introduced as dedicated folders; their absence as a folder does not mean no related test exists elsewhere.
 
-- `src/02-kernel/200_tps_entity_type.sql`
-- `src/02-kernel/210_tps_entity.sql`
-- `src/02-kernel/220_tps_property.sql`
-- `src/03-d3ka/300_tps_relation_type.sql`
-- `src/03-d3ka/310_tps_relation.sql`
-- `src/03-d3ka/320_tps_d3ka_pkg.pks`
-- `src/03-d3ka/321_tps_d3ka_pkg.pkb`
-- `src/03-d3ka/330_d3ka_projection_views.sql`
-- `src/03-d3ka/340_d3ka_invariants.sql`
-- `src/06-graph/600_tps_media_knowledge_graph.sql`
-- `src/07-vector/700_tps_vector_type.sql`
-- `src/07-vector/710_tps_vector.sql`
-- `src/08-knowledge/800_tps_source.sql`
-- `src/08-knowledge/810_tps_assertion.sql`
-- `src/10-policy/1000_tps_policy.sql`
-- `src/10-policy/1010_tps_rule.sql`
-- `src/10-policy/1020_tps_policy_engine_pkg.pks/.pkb`
-- `src/11-ai/1100_tps_ai_agent.sql`
-- `src/11-ai/1110_tps_ai_decision.sql`
-- `src/11-ai/1150_graph_rag_views.sql`
-- `src/12-media/*`
-- `src/17-api/*`
-- `src/26-certification/*`
+## 7. Source/repository state distinction
 
-## Reversibility classes
+```text
+SOURCE_EXISTS
+  -> documentation/static review
+  -> SOURCE_READY
+  -> approved production migration
+  -> DEPLOYED
+  -> VALID_COMPILED where applicable
+  -> functional/security/performance/recovery tests
+  -> CERTIFIED
+```
 
-- R0: read-only, no persistent mutation.
-- R1: additive metadata/object creation with straightforward drop before data use.
-- R2: additive schema change with data/state impact; recovery script required.
-- R3: destructive/transformative or externally visible change; backup/restore or blue-green strategy required.
-- R4: irreversible business/event history mutation; prohibited without explicit exceptional authority.
+No state transition is inferred.
+
+## 8. Reversibility classes
+
+- `READ_ONLY` / R0 — no persistent mutation.
+- `R1_ADDITIVE` — additive object/metadata; removable before use.
+- `R2_STATEFUL` — persistent state/schema behavior requiring compensating recovery.
+- `R3_TRANSFORMATIVE` — destructive/external-contract/data-transforming; backup/restore or forward recovery required.
+- `R4_IRREVERSIBLE_HISTORY` — exceptional/prohibited without explicit authority.
+
+## 9. Naming status
+
+Object and package names introduced during engineering are `ENGINEERING_PROVISIONAL` unless separately recorded as owner-approved. Source presence is not naming approval.
