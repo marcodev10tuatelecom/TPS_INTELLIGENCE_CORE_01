@@ -1,4 +1,4 @@
--- V0001 APPLY | PRODUCTION MUTATION | DO NOT RUN WITHOUT APPROVED CHANGE
+-- V0001 APPLY | TPSDBCORE01 PRODUCTION MUTATION | DO NOT RUN WITHOUT APPROVED CHANGE
 WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK
 SET DEFINE ON VERIFY OFF
 PROMPT TPSDBCORE01 V0001 - verify approved CHANGE_ID and COMMIT before proceeding.
@@ -19,9 +19,9 @@ PROMPT TPSDBCORE01 V0001 - verify approved CHANGE_ID and COMMIT before proceedin
 @@../../src/03-d3ka/350_tps_fact_class.sql
 @@../../src/03-d3ka/351_tps_fact_class_mapping.sql
 @@../../src/03-d3ka/360_d3ka_coverage_v.sql
+@@../../src/08-knowledge/810_tps_assertion.sql
 @@../../src/07-vector/700_tps_vector_type.sql
 @@../../src/07-vector/710_tps_vector.sql
-@@../../src/08-knowledge/810_tps_assertion.sql
 @@../../src/09-event/900_tps_event_type.sql
 @@../../src/09-event/910_tps_event.sql
 @@../../src/10-policy/1000_tps_policy.sql
@@ -58,5 +58,5 @@ PROMPT TPSDBCORE01 V0001 - verify approved CHANGE_ID and COMMIT before proceedin
 @@../../src/06-graph/610_tps_graph_neighbors_v.sql
 @@../../src/17-api/1700_entity_api_v.sql
 @@../../src/17-api/1710_station_now_programming_v.sql
--- JSON Duality and AI configuration remain separate gated subchanges.
+-- JSON Duality and AI provider/agent configuration remain separate gated subchanges.
 COMMIT;

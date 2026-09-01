@@ -1,4 +1,4 @@
--- TPSDBCORE01 | CORE-04/06/07/09 | R1 | NOT DEPLOYED
+-- TPSDBCORE01 | CORE-04/06/07/09/11 | R1 | NOT DEPLOYED
 CREATE OR REPLACE PACKAGE BODY tps_d3ka_pkg AS
     FUNCTION relation_type_id(p_code IN VARCHAR2) RETURN NUMBER IS
         l_id NUMBER;
@@ -29,16 +29,24 @@ CREATE OR REPLACE PACKAGE BODY tps_d3ka_pkg AS
         l_allow_self NUMBER;
         l_requires_context NUMBER;
         l_requires_provenance NUMBER;
+        l_policy_sensitive NUMBER;
         l_relation_id NUMBER;
     BEGIN
         l_type_id := relation_type_id(p_relation_code);
-        SELECT source_entity_type_id, target_entity_type_id, allow_self, requires_context, requires_provenance
-          INTO l_expected_source, l_expected_target, l_allow_self, l_requires_context, l_requires_provenance
+        SELECT source_entity_type_id, target_entity_type_id, allow_self,
+               requires_context, requires_provenance, policy_sensitive
+          INTO l_expected_source, l_expected_target, l_allow_self,
+               l_requires_context, l_requires_provenance, l_policy_sensitive
           FROM tps_relation_type WHERE relation_type_id = l_type_id;
 
-        SELECT entity_type_id INTO l_source_type FROM tps_entity WHERE entity_id = p_source_entity_id AND state = 'ACTIVE';
-        SELECT entity_type_id INTO l_target_type FROM tps_entity WHERE entity_id = p_target_entity_id AND state = 'ACTIVE';
+        SELECT entity_type_id INTO l_source_type
+        FROM tps_entity WHERE entity_id = p_source_entity_id AND state = 'ACTIVE';
+        SELECT entity_type_id INTO l_target_type
+        FROM tps_entity WHERE entity_id = p_target_entity_id AND state = 'ACTIVE';
 
+        IF l_policy_sensitive = 1 THEN
+            RAISE_APPLICATION_ERROR(-20000, 'D3KA_POLICY_SENSITIVE_RELATION_REQUIRES_SPECIALIZED_API');
+        END IF;
         IF l_allow_self = 0 AND p_source_entity_id = p_target_entity_id THEN
             RAISE_APPLICATION_ERROR(-20001, 'D3KA_SELF_RELATION_NOT_ALLOWED');
         END IF;
@@ -56,6 +64,10 @@ CREATE OR REPLACE PACKAGE BODY tps_d3ka_pkg AS
         END IF;
         IF p_confidence IS NOT NULL AND (p_confidence < 0 OR p_confidence > 1) THEN
             RAISE_APPLICATION_ERROR(-20006, 'D3KA_CONFIDENCE_OUT_OF_RANGE');
+        END IF;
+        IF UPPER(p_assertion_class) IN ('INFERENCE','AI_INFERENCE','EXTERNAL_IMPORT')
+           AND p_provenance_source_id IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20008, 'D3KA_ASSERTION_CLASS_REQUIRES_PROVENANCE');
         END IF;
 
         INSERT INTO tps_relation(
@@ -78,9 +90,10 @@ CREATE OR REPLACE PACKAGE BODY tps_d3ka_pkg AS
                state = 'INACTIVE'
          WHERE relation_id = p_relation_id
            AND state = 'ACTIVE'
-           AND valid_to IS NULL;
+           AND valid_to IS NULL
+           AND p_valid_to > valid_from;
         IF SQL%ROWCOUNT <> 1 THEN
-            RAISE_APPLICATION_ERROR(-20007, 'D3KA_ACTIVE_RELATION_NOT_FOUND');
+            RAISE_APPLICATION_ERROR(-20007, 'D3KA_ACTIVE_RELATION_NOT_FOUND_OR_INVALID_END_TIME');
         END IF;
     END;
 

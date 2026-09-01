@@ -28,11 +28,12 @@ CREATE TABLE tps_relation (
     CONSTRAINT ck_tps_relation_validity CHECK (valid_to IS NULL OR valid_to > valid_from)
 );
 
+-- Function-based uniqueness: only current ACTIVE cells participate. Historical rows
+-- evaluate to all-NULL keys and therefore remain repeatable/preservable.
 CREATE UNIQUE INDEX ux_tps_relation_active_cell
 ON tps_relation (
-    source_entity_id,
-    relation_type_id,
-    target_entity_id,
-    NVL(context_id,0),
-    CASE WHEN state = 'ACTIVE' AND valid_to IS NULL THEN 1 ELSE NULL END
+    CASE WHEN state='ACTIVE' AND valid_to IS NULL THEN source_entity_id END,
+    CASE WHEN state='ACTIVE' AND valid_to IS NULL THEN relation_type_id END,
+    CASE WHEN state='ACTIVE' AND valid_to IS NULL THEN target_entity_id END,
+    CASE WHEN state='ACTIVE' AND valid_to IS NULL THEN NVL(context_id,0) END
 );
