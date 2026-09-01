@@ -1,0 +1,43 @@
+-- COMP-003 — TPSDBCORE01 V0004 compile gate
+-- READ ONLY. Expected final output: COMP-003=PASS
+SET SERVEROUTPUT ON
+DECLARE
+  l_missing NUMBER;
+  l_invalid NUMBER;
+  l_errors  NUMBER;
+BEGIN
+  SELECT COUNT(*) INTO l_missing
+  FROM (
+    SELECT 'TPS_BROADCAST_ADMIN_PKG' object_name, 'PACKAGE' object_type FROM dual UNION ALL
+    SELECT 'TPS_BROADCAST_ADMIN_PKG', 'PACKAGE BODY' FROM dual UNION ALL
+    SELECT 'TPS_RIGHTS_ADMIN_PKG', 'PACKAGE' FROM dual UNION ALL
+    SELECT 'TPS_RIGHTS_ADMIN_PKG', 'PACKAGE BODY' FROM dual UNION ALL
+    SELECT 'TPS_PLAYOUT_API_PKG', 'PACKAGE' FROM dual UNION ALL
+    SELECT 'TPS_PLAYOUT_API_PKG', 'PACKAGE BODY' FROM dual
+  ) e
+  WHERE NOT EXISTS (
+    SELECT 1 FROM user_objects u
+     WHERE u.object_name=e.object_name AND u.object_type=e.object_type
+  );
+
+  SELECT COUNT(*) INTO l_invalid
+    FROM user_objects
+   WHERE object_name IN ('TPS_BROADCAST_ADMIN_PKG','TPS_RIGHTS_ADMIN_PKG','TPS_PLAYOUT_API_PKG')
+     AND object_type IN ('PACKAGE','PACKAGE BODY')
+     AND status <> 'VALID';
+
+  SELECT COUNT(*) INTO l_errors
+    FROM user_errors
+   WHERE name IN ('TPS_BROADCAST_ADMIN_PKG','TPS_RIGHTS_ADMIN_PKG','TPS_PLAYOUT_API_PKG');
+
+  DBMS_OUTPUT.PUT_LINE('COMP003_MISSING='||l_missing);
+  DBMS_OUTPUT.PUT_LINE('COMP003_INVALID='||l_invalid);
+  DBMS_OUTPUT.PUT_LINE('COMP003_USER_ERRORS='||l_errors);
+
+  IF l_missing<>0 OR l_invalid<>0 OR l_errors<>0 THEN
+    RAISE_APPLICATION_ERROR(-20931,'COMP-003=FAIL');
+  END IF;
+
+  DBMS_OUTPUT.PUT_LINE('COMP-003=PASS');
+END;
+/
