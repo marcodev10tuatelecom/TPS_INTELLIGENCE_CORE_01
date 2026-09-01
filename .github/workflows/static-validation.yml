@@ -1,0 +1,17 @@
+name: static-validation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  repository-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify prechecks are read-only
+        run: python3 tools/validate_prechecks.py
+      - name: Verify source authority headers
+        run: python3 tools/validate_source_headers.py
+      - name: Inventory repository
+        run: python3 tools/repository_inventory.py

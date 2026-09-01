@@ -1,0 +1,21 @@
+# Oracle/network credential material must never be committed
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.sso
+*.ora
+wallet/
+Wallet_*/
+credentials/
+secrets/
+.env
+.env.*
+
+# Generated/local output
+*.log
+*.out
+*.tmp
+__pycache__/
+.DS_Store
