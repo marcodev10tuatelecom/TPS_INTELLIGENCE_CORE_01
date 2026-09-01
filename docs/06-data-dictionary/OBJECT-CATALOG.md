@@ -1,0 +1,21 @@
+# Database Object Catalog v0.01
+
+Core planned objects:
+
+Identity: TPS_ENTITY_TYPE, TPS_ENTITY, TPS_PROPERTY.
+D3KA: TPS_RELATION_TYPE, TPS_RELATION, TPS_D3KA_PKG, D3KA views.
+Context: TPS_CONTEXT_TYPE, TPS_CONTEXT.
+Temporal: relation validity columns and temporal helper views/packages.
+Graph: TPS_MEDIA_KNOWLEDGE_GRAPH.
+Vector: TPS_VECTOR_TYPE, TPS_VECTOR and approved vector indexes.
+Knowledge: TPS_SOURCE, TPS_ASSERTION.
+Event: TPS_EVENT_TYPE, TPS_EVENT.
+Policy: TPS_POLICY, TPS_RULE, TPS_POLICY_ENGINE_PKG.
+AI: TPS_AI_MODEL, TPS_AI_AGENT, TPS_AI_TOOL, TPS_AI_DECISION.
+Audit: TPS_AUDIT_EVENT plus native audit policies.
+Media: TPS_STATION, TPS_CHANNEL, TPS_PROGRAM, TPS_SCHEDULE, TPS_SCHEDULE_ITEM, TPS_MEDIA_ASSET.
+Commercial: TPS_CAMPAIGN, TPS_PLACEMENT.
+Rights: TPS_RIGHT_GRANT.
+Audience: TPS_AUDIENCE_SEGMENT, TPS_AUDIENCE_OBSERVATION.
+Editorial: TPS_EDITORIAL_ITEM.
+API: selected views/JSON Duality/ORDS modules after CORE-13.
