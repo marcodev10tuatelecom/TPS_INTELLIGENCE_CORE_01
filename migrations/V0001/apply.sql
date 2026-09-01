@@ -8,6 +8,8 @@ PROMPT TPSDBCORE01 V0001 - verify approved CHANGE_ID and COMMIT before proceedin
 @@../../src/02-kernel/210_tps_entity.sql
 @@../../src/02-kernel/220_tps_property.sql
 @@../../src/02-kernel/230_tps_source.sql
+@@../../src/02-kernel/240_tps_entity_pkg.pks
+@@../../src/02-kernel/241_tps_entity_pkg.pkb
 @@../../src/04-context/400_tps_context_type.sql
 @@../../src/04-context/410_tps_context.sql
 @@../../src/03-d3ka/300_tps_relation_type.sql
@@ -24,6 +26,8 @@ PROMPT TPSDBCORE01 V0001 - verify approved CHANGE_ID and COMMIT before proceedin
 @@../../src/07-vector/710_tps_vector.sql
 @@../../src/09-event/900_tps_event_type.sql
 @@../../src/09-event/910_tps_event.sql
+@@../../src/09-event/920_tps_event_pkg.pks
+@@../../src/09-event/921_tps_event_pkg.pkb
 @@../../src/10-policy/1000_tps_policy.sql
 @@../../src/10-policy/1010_tps_rule.sql
 @@../../src/11-ai/1100_tps_ai_model.sql
@@ -37,6 +41,10 @@ PROMPT TPSDBCORE01 V0001 - verify approved CHANGE_ID and COMMIT before proceedin
 @@../../src/12-media/1230_tps_schedule.sql
 @@../../src/12-media/1240_tps_schedule_item.sql
 @@../../src/12-media/1250_tps_media_asset.sql
+@@../../src/12-media/1260_schedule_gap_v.sql
+@@../../src/12-media/1261_schedule_overlap_v.sql
+@@../../src/12-media/1270_tps_schedule_pkg.pks
+@@../../src/12-media/1271_tps_schedule_pkg.pkb
 @@../../src/13-commercial/1300_tps_campaign.sql
 @@../../src/13-commercial/1310_tps_placement.sql
 @@../../src/14-rights/1400_tps_right_grant.sql
@@ -58,5 +66,5 @@ PROMPT TPSDBCORE01 V0001 - verify approved CHANGE_ID and COMMIT before proceedin
 @@../../src/06-graph/610_tps_graph_neighbors_v.sql
 @@../../src/17-api/1700_entity_api_v.sql
 @@../../src/17-api/1710_station_now_programming_v.sql
--- JSON Duality and AI provider/agent configuration remain separate gated subchanges.
+-- JSON Duality, roles/grants, audit policy and AI provider/agent configuration are separate gated changes.
 COMMIT;
