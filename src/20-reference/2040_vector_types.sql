@@ -1,0 +1,17 @@
+-- TPSDBCORE01 | REFERENCE DATA | R2 DML | NOT DEPLOYED
+MERGE INTO tps_vector_type t
+USING (
+  SELECT 'TEXT_SEMANTIC_VECTOR' code,'Text Semantic' name,'COSINE' metric FROM dual UNION ALL
+  SELECT 'AUDIO_SEMANTIC_VECTOR','Audio Semantic','COSINE' FROM dual UNION ALL
+  SELECT 'IMAGE_SEMANTIC_VECTOR','Image Semantic','COSINE' FROM dual UNION ALL
+  SELECT 'MUSIC_STYLE_VECTOR','Music Style','COSINE' FROM dual UNION ALL
+  SELECT 'EMOTIONAL_VECTOR','Emotional','COSINE' FROM dual UNION ALL
+  SELECT 'AUDIENCE_AFFINITY_VECTOR','Audience Affinity','COSINE' FROM dual UNION ALL
+  SELECT 'EDITORIAL_VECTOR','Editorial','COSINE' FROM dual UNION ALL
+  SELECT 'BRAND_VECTOR','Brand','COSINE' FROM dual UNION ALL
+  SELECT 'PROGRAM_VECTOR','Program','COSINE' FROM dual UNION ALL
+  SELECT 'COMMERCIAL_VECTOR','Commercial','COSINE' FROM dual UNION ALL
+  SELECT 'CONTEXT_VECTOR','Context','COSINE' FROM dual
+) s ON(t.type_code=s.code)
+WHEN MATCHED THEN UPDATE SET t.display_name=s.name,t.distance_metric=s.metric
+WHEN NOT MATCHED THEN INSERT(type_code,display_name,distance_metric) VALUES(s.code,s.name,s.metric);

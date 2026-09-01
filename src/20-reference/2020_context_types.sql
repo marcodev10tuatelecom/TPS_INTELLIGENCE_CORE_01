@@ -1,0 +1,22 @@
+-- TPSDBCORE01 | REFERENCE DATA | R2 DML | NOT DEPLOYED
+MERGE INTO tps_context_type t
+USING (
+  SELECT 'TIME' code,'Time' name FROM dual UNION ALL
+  SELECT 'LOCATION','Location' FROM dual UNION ALL
+  SELECT 'REGION','Region' FROM dual UNION ALL
+  SELECT 'NETWORK','Network' FROM dual UNION ALL
+  SELECT 'STATION','Station' FROM dual UNION ALL
+  SELECT 'CHANNEL','Channel' FROM dual UNION ALL
+  SELECT 'PROGRAM','Program' FROM dual UNION ALL
+  SELECT 'AUDIENCE','Audience' FROM dual UNION ALL
+  SELECT 'DEVICE','Device' FROM dual UNION ALL
+  SELECT 'WEATHER','Weather' FROM dual UNION ALL
+  SELECT 'EVENT','Event' FROM dual UNION ALL
+  SELECT 'EDITORIAL','Editorial' FROM dual UNION ALL
+  SELECT 'COMMERCIAL','Commercial' FROM dual UNION ALL
+  SELECT 'REGULATORY','Regulatory' FROM dual UNION ALL
+  SELECT 'RIGHTS','Rights' FROM dual UNION ALL
+  SELECT 'OPERATIONAL','Operational' FROM dual
+) s ON (t.type_code=s.code)
+WHEN MATCHED THEN UPDATE SET t.display_name=s.name
+WHEN NOT MATCHED THEN INSERT(type_code,display_name) VALUES(s.code,s.name);

@@ -1,0 +1,26 @@
+-- TPSDBCORE01 | REFERENCE DATA | R2 DML | NOT DEPLOYED
+MERGE INTO tps_event_type t
+USING (
+  SELECT 'TRACK_STARTED' code,'Track Started' name FROM dual UNION ALL
+  SELECT 'TRACK_FINISHED','Track Finished' FROM dual UNION ALL
+  SELECT 'CONTENT_STARTED','Content Started' FROM dual UNION ALL
+  SELECT 'CONTENT_FINISHED','Content Finished' FROM dual UNION ALL
+  SELECT 'PROGRAM_STARTED','Program Started' FROM dual UNION ALL
+  SELECT 'PROGRAM_FINISHED','Program Finished' FROM dual UNION ALL
+  SELECT 'AD_PLAYED','Ad Played' FROM dual UNION ALL
+  SELECT 'USER_CONNECTED','User Connected' FROM dual UNION ALL
+  SELECT 'USER_DISCONNECTED','User Disconnected' FROM dual UNION ALL
+  SELECT 'STREAM_FAILED','Stream Failed' FROM dual UNION ALL
+  SELECT 'CONTENT_PUBLISHED','Content Published' FROM dual UNION ALL
+  SELECT 'NEWS_CREATED','News Created' FROM dual UNION ALL
+  SELECT 'ENTITY_CHANGED','Entity Changed' FROM dual UNION ALL
+  SELECT 'RELATION_CHANGED','Relation Changed' FROM dual UNION ALL
+  SELECT 'AI_RECOMMENDATION_CREATED','AI Recommendation Created' FROM dual UNION ALL
+  SELECT 'AI_RECOMMENDATION_ACCEPTED','AI Recommendation Accepted' FROM dual UNION ALL
+  SELECT 'AI_RECOMMENDATION_REJECTED','AI Recommendation Rejected' FROM dual UNION ALL
+  SELECT 'POLICY_DENIED','Policy Denied' FROM dual UNION ALL
+  SELECT 'FAILOVER_STARTED','Failover Started' FROM dual UNION ALL
+  SELECT 'FAILOVER_COMPLETED','Failover Completed' FROM dual
+) s ON(t.event_code=s.code)
+WHEN MATCHED THEN UPDATE SET t.display_name=s.name
+WHEN NOT MATCHED THEN INSERT(event_code,display_name) VALUES(s.code,s.name);
