@@ -4,11 +4,16 @@ CREATE OR REPLACE PACKAGE BODY tps_policy_engine_pkg AS
     p_content_entity_id IN NUMBER,
     p_beneficiary_entity_id IN NUMBER,
     p_action_code IN VARCHAR2,
-    p_at IN TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP
+    p_at IN TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP,
+    p_territory_entity_id IN NUMBER DEFAULT NULL,
+    p_context_id IN NUMBER DEFAULT NULL
   ) RETURN VARCHAR2 IS
     l_rights VARCHAR2(20);
   BEGIN
-    l_rights := tps_rights_pkg.decision_for(p_content_entity_id,p_beneficiary_entity_id,p_action_code,p_at);
+    l_rights:=tps_rights_pkg.decision_for(
+      p_content_entity_id,p_beneficiary_entity_id,p_action_code,p_at,
+      p_territory_entity_id,p_context_id
+    );
     IF l_rights='DENY' THEN RETURN 'DENY_RIGHTS'; END IF;
     IF l_rights='UNKNOWN' THEN RETURN 'DENY_UNKNOWN_RIGHTS'; END IF;
     RETURN 'ALLOW';
