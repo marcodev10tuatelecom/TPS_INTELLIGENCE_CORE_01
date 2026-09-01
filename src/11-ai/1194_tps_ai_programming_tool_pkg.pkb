@@ -23,19 +23,21 @@
  @ai_role           Concrete bounded tool implementation.
  @security          Static PL/SQL only. Prompt content cannot change permission mode or call arbitrary objects.
  @performance       Bounded lookups/inserts; no unbounded dynamic query generation.
- @transaction       No COMMIT/ROLLBACK. Tool effects are atomic with caller transaction.
+ @transaction       No COMMIT or full ROLLBACK. EXECUTE_BOUNDED establishes an internal SAVEPOINT
+                    and ROLLBACK TO SAVEPOINT on any downstream failure so schedule DML and success
+                    audit insertion behave atomically while preserving the caller's earlier transaction work.
  @idempotency       Proposal/execution events are not retry-deduplicated yet; request ledger is future work.
- @failure_modes     Permission denial/programming validation failures propagate; failed bounded execution
-                    creates no success decision row in the same transaction.
- @rollback_recovery Caller rollback; committed history remains auditable.
+ @failure_modes     Permission denial/programming validation failures propagate. Any failure after bounded
+                    schedule insertion rolls back that bounded operation to the local savepoint.
+ @rollback_recovery Local savepoint protects bounded operation; caller owns final COMMIT/ROLLBACK.
  @tests             tests/ai-control/* and compile validation.
  @evidence          CORE-10/14/16/18.
- @references        Oracle AI Database 26ai PL/SQL, JSON and AI Agent documentation.
+ @references        Oracle AI Database 26ai PL/SQL transaction control, JSON and AI Agent documentation.
  @links             src/11-ai/1193_tps_ai_programming_tool_pkg.pks;
                     src/12-media/1261_tps_programming_pkg.pkb;
                     src/11-ai/1130_tps_ai_decision.sql
  @owner             TPS MEDIA DATABASE ENGINEERING
- @change_history    v0.02 2026-09-01 — initial implementation.
+ @change_history    v0.02 2026-09-01 — initial implementation; local atomicity savepoint added.
 =============================================================================*/
 
 CREATE OR REPLACE PACKAGE BODY tps_ai_programming_tool_pkg AS
@@ -160,56 +162,64 @@ CREATE OR REPLACE PACKAGE BODY tps_ai_programming_tool_pkg AS
           SYSTIMESTAMP
       );
 
-      /* This is the only programming state change in the AI wrapper. All business validation
-         remains in TPS_PROGRAMMING_PKG; the AI wrapper cannot bypass it. */
-      l_item_id := tps_programming_pkg.add_schedule_item(
-          p_schedule_id       => p_schedule_id,
-          p_content_entity_id => p_content_entity_id,
-          p_context_id        => p_context_id,
-          p_start_at          => p_start_at,
-          p_end_at            => p_end_at,
-          p_item_class        => p_item_class,
-          p_priority          => p_priority
-      );
+      SAVEPOINT tps_ai_bounded_exec;
 
-      SELECT ai_model_id
-        INTO l_model_id
-        FROM tps_ai_agent
-       WHERE ai_agent_id = p_ai_agent_id
-         AND state = 'ACTIVE';
+      BEGIN
+          /* This is the only programming state change in the AI wrapper. All business validation
+             remains in TPS_PROGRAMMING_PKG; the AI wrapper cannot bypass it. */
+          l_item_id := tps_programming_pkg.add_schedule_item(
+              p_schedule_id       => p_schedule_id,
+              p_content_entity_id => p_content_entity_id,
+              p_context_id        => p_context_id,
+              p_start_at          => p_start_at,
+              p_end_at            => p_end_at,
+              p_item_class        => p_item_class,
+              p_priority          => p_priority
+          );
 
-      INSERT INTO tps_ai_decision(
-          ai_agent_id,
-          ai_model_id,
-          context_id,
-          input_summary_json,
-          output_json,
-          confidence,
-          policy_result,
-          final_action,
-          human_override
-      ) VALUES (
-          p_ai_agent_id,
-          l_model_id,
-          p_context_id,
-          JSON_OBJECT(
-              'operation' VALUE 'EXECUTE_BOUNDED_ADD_ITEM',
-              'schedule_id' VALUE p_schedule_id,
-              'content_entity_id' VALUE p_content_entity_id
-              RETURNING JSON
-          ),
-          JSON_OBJECT(
-              'schedule_item_id' VALUE l_item_id,
-              'status' VALUE 'INSERTED_BY_DETERMINISTIC_PROGRAMMING_ENGINE'
-              RETURNING JSON
-          ),
-          p_confidence,
-          'DETERMINISTIC_CHECKS_PASSED',
-          'ADD_SCHEDULE_ITEM',
-          0
-      ) RETURNING ai_decision_id INTO l_decision_id;
+          SELECT ai_model_id
+            INTO l_model_id
+            FROM tps_ai_agent
+           WHERE ai_agent_id = p_ai_agent_id
+             AND state = 'ACTIVE';
 
-      RETURN l_item_id;
+          INSERT INTO tps_ai_decision(
+              ai_agent_id,
+              ai_model_id,
+              context_id,
+              input_summary_json,
+              output_json,
+              confidence,
+              policy_result,
+              final_action,
+              human_override
+          ) VALUES (
+              p_ai_agent_id,
+              l_model_id,
+              p_context_id,
+              JSON_OBJECT(
+                  'operation' VALUE 'EXECUTE_BOUNDED_ADD_ITEM',
+                  'schedule_id' VALUE p_schedule_id,
+                  'content_entity_id' VALUE p_content_entity_id
+                  RETURNING JSON
+              ),
+              JSON_OBJECT(
+                  'schedule_item_id' VALUE l_item_id,
+                  'status' VALUE 'INSERTED_BY_DETERMINISTIC_PROGRAMMING_ENGINE'
+                  RETURNING JSON
+              ),
+              p_confidence,
+              'DETERMINISTIC_CHECKS_PASSED',
+              'ADD_SCHEDULE_ITEM',
+              0
+          ) RETURNING ai_decision_id INTO l_decision_id;
+
+          RETURN l_item_id;
+      EXCEPTION
+          WHEN OTHERS THEN
+              ROLLBACK TO tps_ai_bounded_exec;
+              RAISE;
+      END;
   END execute_bounded_add_item;
 
 END tps_ai_programming_tool_pkg;
