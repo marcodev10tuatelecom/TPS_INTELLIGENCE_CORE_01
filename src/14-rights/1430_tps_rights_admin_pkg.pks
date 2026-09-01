@@ -23,11 +23,11 @@
  @performance       Point validation and single-row insert/update.
  @transaction       No COMMIT/ROLLBACK; caller owns transaction.
  @idempotency       Exact matching active grant returns existing RIGHT_GRANT_ID.
- @failure_modes     Missing entity/source, invalid interval/decision/action, invalid revoke state.
+ @failure_modes     Missing entity/source, invalid interval/decision/action/JSON, invalid revoke state.
  @rollback_recovery Caller rollback before commit; committed rights use lifecycle state.
  @tests             tests/integration/INT-010_broadcast_end_to_end.sql; COMP-003.
  @evidence          CORE-09/11/14 rights evidence.
- @references        Oracle AI Database 26ai PL/SQL Language Reference.
+ @references        Oracle AI Database 26ai PL/SQL Language Reference; JSON constructor semantics.
  @links             src/14-rights/1400_tps_right_grant.sql; src/14-rights/1410_tps_rights_pkg.pks
  @owner             TPS MEDIA DATABASE ENGINEERING
  @change_history    v0.04 2026-09-01 — initial governed rights administration API.
@@ -36,17 +36,17 @@
 CREATE OR REPLACE PACKAGE tps_rights_admin_pkg AUTHID DEFINER AS
 
   FUNCTION grant_right(
-      p_content_entity_id      IN NUMBER,
-      p_beneficiary_entity_id  IN NUMBER,
-      p_action_code            IN VARCHAR2,
-      p_valid_from             IN TIMESTAMP WITH TIME ZONE,
-      p_valid_to               IN TIMESTAMP WITH TIME ZONE,
-      p_decision               IN VARCHAR2,
-      p_source_id              IN NUMBER,
+      p_content_entity_id       IN NUMBER,
+      p_beneficiary_entity_id   IN NUMBER,
+      p_action_code             IN VARCHAR2,
+      p_valid_from              IN TIMESTAMP WITH TIME ZONE,
+      p_valid_to                IN TIMESTAMP WITH TIME ZONE,
+      p_decision                IN VARCHAR2,
+      p_source_id               IN NUMBER,
       p_rights_holder_entity_id IN NUMBER DEFAULT NULL,
-      p_territory_entity_id    IN NUMBER DEFAULT NULL,
-      p_context_id             IN NUMBER DEFAULT NULL,
-      p_restrictions_json      IN JSON DEFAULT NULL
+      p_territory_entity_id     IN NUMBER DEFAULT NULL,
+      p_context_id              IN NUMBER DEFAULT NULL,
+      p_restrictions_json       IN CLOB DEFAULT NULL
   ) RETURN NUMBER;
 
   PROCEDURE revoke_right(
