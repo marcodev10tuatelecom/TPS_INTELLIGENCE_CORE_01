@@ -29,7 +29,7 @@
  @references        Oracle AI Database 26ai PL/SQL Language Reference.
  @links             src/12-media/1295_tps_broadcast_admin_pkg.pks
  @owner             TPS MEDIA DATABASE ENGINEERING
- @change_history    v0.04 2026-09-01 — initial implementation; null station-kind guard hardened.
+ @change_history    v0.04 2026-09-01 — initial implementation; validation hardened.
 =============================================================================*/
 
 CREATE OR REPLACE PACKAGE BODY tps_broadcast_admin_pkg AS
@@ -259,7 +259,7 @@ CREATE OR REPLACE PACKAGE BODY tps_broadcast_admin_pkg AS
     l_count NUMBER;
     l_hash VARCHAR2(64) := LOWER(TRIM(p_sha256_hex));
   BEGIN
-    IF NOT REGEXP_LIKE(l_hash,'^[0-9a-f]{64}$') THEN
+    IF l_hash IS NULL OR REGEXP_INSTR(l_hash,'^[0-9a-f]{64}$') <> 1 THEN
       RAISE_APPLICATION_ERROR(-20750,'TPS_BROADCAST_SHA256_INVALID');
     END IF;
     IF TRIM(p_storage_location) IS NULL THEN
