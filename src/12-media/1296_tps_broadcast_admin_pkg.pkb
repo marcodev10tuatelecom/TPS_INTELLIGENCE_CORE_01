@@ -29,7 +29,7 @@
  @references        Oracle AI Database 26ai PL/SQL Language Reference.
  @links             src/12-media/1295_tps_broadcast_admin_pkg.pks
  @owner             TPS MEDIA DATABASE ENGINEERING
- @change_history    v0.04 2026-09-01 — initial implementation.
+ @change_history    v0.04 2026-09-01 — initial implementation; null station-kind guard hardened.
 =============================================================================*/
 
 CREATE OR REPLACE PACKAGE BODY tps_broadcast_admin_pkg AS
@@ -109,7 +109,7 @@ CREATE OR REPLACE PACKAGE BODY tps_broadcast_admin_pkg AS
     l_kind VARCHAR2(20) := UPPER(TRIM(p_station_kind));
     l_existing_kind VARCHAR2(20);
   BEGIN
-    IF l_kind NOT IN ('RADIO','TV') THEN
+    IF l_kind IS NULL OR l_kind NOT IN ('RADIO','TV') THEN
       RAISE_APPLICATION_ERROR(-20710,'TPS_BROADCAST_STATION_KIND_MUST_BE_RADIO_OR_TV');
     END IF;
     IF TRIM(p_timezone_name) IS NULL THEN
