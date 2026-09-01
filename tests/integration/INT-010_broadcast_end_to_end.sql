@@ -25,7 +25,6 @@ BEGIN
   SAVEPOINT int010_start;
   l_prefix := 'INT010:'||l_run||':';
 
-  -- 1. Real canonical administration calls: network, station, channel, program.
   l_network_id := tps_broadcast_admin_pkg.register_network(
       l_prefix||'NETWORK','INT-010 Synthetic Network');
 
@@ -42,13 +41,11 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20940,'INT-010 entity registration failed');
   END IF;
 
-  -- 2. D3KA station -> network relationship.
   l_relation_id := tps_broadcast_admin_pkg.affiliate_station(l_station_id,l_network_id,l_at-INTERVAL '1' HOUR);
   IF l_relation_id IS NULL THEN
     RAISE_APPLICATION_ERROR(-20941,'INT-010 affiliation relation failed');
   END IF;
 
-  -- 3. Provenance source for the synthetic rights grant.
   l_source_entity := tps_broadcast_admin_pkg.ensure_entity(
       'SYSTEM',l_prefix||'RIGHTS-SOURCE','INT-010 Synthetic Rights Source');
 
@@ -61,7 +58,6 @@ BEGIN
 
   SELECT source_id INTO l_source_id FROM tps_source WHERE source_key=l_prefix||'SOURCE';
 
-  -- 4. Media asset for the program.
   SELECT LOWER(RAWTOHEX(STANDARD_HASH(l_prefix||'ASSET','SHA256'))) INTO l_hash FROM dual;
   l_asset_id := tps_broadcast_admin_pkg.register_media_asset(
       p_asset_key => l_prefix||'ASSET-ENTITY',
@@ -78,7 +74,6 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20942,'INT-010 media asset registration failed');
   END IF;
 
-  -- 5. Explicit BROADCAST ALLOW for the network.
   l_right_id := tps_rights_admin_pkg.grant_right(
       p_content_entity_id => l_program_id,
       p_beneficiary_entity_id => l_network_id,
@@ -92,7 +87,6 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20943,'INT-010 rights grant failed');
   END IF;
 
-  -- 6. Deterministic policy profile required by V0003 schedule guard.
   INSERT INTO tps_programming_rule_profile(
       owner_entity_id,repeat_window_minutes,max_commercial_seconds_rolling_hour,
       max_content_minimum_age,require_program_rating,asset_duration_tolerance_sec,
@@ -101,7 +95,6 @@ BEGIN
       l_network_id,0,3600,18,0,5,0,'ACTIVE',l_at-INTERVAL '1' HOUR,l_at+INTERVAL '2' HOUR
   );
 
-  -- 7. Create schedule, add the authorized program, approve and activate.
   l_schedule_id := tps_programming_pkg.create_schedule(
       p_schedule_key => l_prefix||'NETWORK-SCHEDULE',
       p_owner_entity_id => l_network_id,
@@ -122,27 +115,31 @@ BEGIN
   tps_programming_pkg.approve_schedule(l_schedule_id);
   tps_programming_pkg.activate_schedule(l_schedule_id);
 
-  -- 8. Direct consumer-facing NOW/NEXT JSON.
   l_now_json := tps_playout_api_pkg.now_next_json(l_network_id,l_at);
-  l_value := JSON_VALUE(l_now_json,'$.now_item_id' RETURNING VARCHAR2);
-  IF TO_NUMBER(l_value) <> l_item_id THEN
+  SELECT JSON_VALUE(l_now_json,'$.now_item_id' RETURNING VARCHAR2)
+    INTO l_value FROM dual;
+  IF l_value IS NULL OR TO_NUMBER(l_value) <> l_item_id THEN
     RAISE_APPLICATION_ERROR(-20944,'INT-010 now/next did not return active network item');
   END IF;
 
-  -- 9. Affiliate loses primary source. Deterministic continuity must inherit network schedule.
   l_playout_json := tps_playout_api_pkg.resolve_playout_json(l_station_id,0,l_at);
-  l_value := JSON_VALUE(l_playout_json,'$.decision_code' RETURNING VARCHAR2);
+  SELECT JSON_VALUE(l_playout_json,'$.decision_code' RETURNING VARCHAR2)
+    INTO l_value FROM dual;
   IF l_value <> 'NETWORK_SCHEDULE' THEN
     RAISE_APPLICATION_ERROR(-20945,'INT-010 expected NETWORK_SCHEDULE, got '||NVL(l_value,'NULL'));
   END IF;
 
-  l_value := JSON_VALUE(l_playout_json,'$.schedule_item_id' RETURNING VARCHAR2);
-  IF TO_NUMBER(l_value) <> l_item_id THEN
+  SELECT JSON_VALUE(l_playout_json,'$.schedule_item_id' RETURNING VARCHAR2)
+    INTO l_value FROM dual;
+  IF l_value IS NULL OR TO_NUMBER(l_value) <> l_item_id THEN
     RAISE_APPLICATION_ERROR(-20946,'INT-010 continuity selected wrong item');
   END IF;
 
   DBMS_OUTPUT.PUT_LINE('INT010_NETWORK_ID='||l_network_id);
   DBMS_OUTPUT.PUT_LINE('INT010_STATION_ID='||l_station_id);
+  DBMS_OUTPUT.PUT_LINE('INT010_CHANNEL_ID='||l_channel_id);
+  DBMS_OUTPUT.PUT_LINE('INT010_PROGRAM_ID='||l_program_id);
+  DBMS_OUTPUT.PUT_LINE('INT010_ASSET_ID='||l_asset_id);
   DBMS_OUTPUT.PUT_LINE('INT010_RELATION_ID='||l_relation_id);
   DBMS_OUTPUT.PUT_LINE('INT010_RIGHT_ID='||l_right_id);
   DBMS_OUTPUT.PUT_LINE('INT010_SCHEDULE_ID='||l_schedule_id);
